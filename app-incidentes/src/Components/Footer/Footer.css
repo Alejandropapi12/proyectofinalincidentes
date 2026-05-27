@@ -1,0 +1,166 @@
+:root {
+  --bg-footer: #1e293b;           /* Gris azulado muy oscuro institucional */
+  --text-footer-main: #f8fafc;    /* Texto blanco para títulos */
+  --text-footer-muted: #94a3b8;   /* Texto gris claro para los datos */
+  --footer-accent: #38bdf8;       /* Color azul brillante para enlaces */
+  --divider-color: #334155;       /* Línea divisoria */
+  --success-color: #22c55e;       /* Verde para el estado */
+}
+
+.uni-footer {
+  background-color: var(--bg-footer);
+  color: var(--text-footer-main);
+  padding: 3rem 0 1.5rem 0;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Rejilla de tres columnas */
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.2fr 1.4fr 1.4fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.footer-column h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  color: var(--text-footer-main);
+  border-left: 3px solid var(--footer-accent);
+  padding-left: 0.5rem;
+}
+
+.footer-description {
+  color: var(--text-footer-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.footer-text {
+  color: var(--text-footer-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+/* Lista de correos */
+.footer-emails {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.footer-emails li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.email-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-footer-main);
+}
+
+.footer-emails a {
+  color: var(--text-footer-muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.2s ease;
+  word-break: break-all; /* Previene desbordamiento de texto largo en móviles */
+}
+
+.footer-emails a:hover {
+  color: var(--footer-accent);
+}
+
+/* Marca de la Universidad */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.footer-logo h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.logo-icon {
+  font-size: 1.6rem;
+}
+
+/* Divisor */
+.footer-divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--divider-color);
+  margin: 2.5rem 0 1.5rem 0;
+}
+
+/* Sección Inferior */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-bottom p {
+  color: var(--text-footer-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Punto de estado */
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid var(--divider-color);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  background-color: var(--success-color);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--success-color);
+}
+
+.status-text {
+  font-size: 0.78rem;
+  color: var(--text-footer-muted);
+}
+
+/* Responsivo para Tablets y Teléfonos móviles */
+@media (max-width: 850px) {
+  .footer-top {
+    grid-template-columns: 1fr; /* Pasa a formato de lista vertical */
+    gap: 2rem;
+  }
+  
+  .footer-divider {
+    margin: 1.5rem 0;
+  }
+}

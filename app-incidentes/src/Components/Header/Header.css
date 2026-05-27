@@ -1,0 +1,63 @@
+:root {
+  --primary-color: #1e40af;       /* Azul Institucional */
+  --text-main: #1f2937;           /* Gris oscuro para texto */
+  --bg-header: #ffffff;           /* Fondo blanco */
+  --border-color: #e5e7eb;        /* Línea divisoria inferior */
+}
+
+.uni-header {
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 65px; /* Reducido ligeramente para un look más compacto */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Alinea el logo a la izquierda de la pantalla */
+}
+
+/* Sección del Logo */
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.logo-icon {
+  font-size: 1.6rem;
+}
+
+.header-logo h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.logo-dot {
+  color: var(--primary-color);
+}
+
+/* Ajuste fino para móviles */
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 1rem;
+    height: 60px;
+  }
+  
+  .header-logo h1 {
+    font-size: 1.15rem;
+  }
+}
