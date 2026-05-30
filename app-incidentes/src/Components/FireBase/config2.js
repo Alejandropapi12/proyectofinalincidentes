@@ -1,8 +1,8 @@
-// 1. Importamos la función para inicializar Firebase y el SDK de Firestore
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // 🗄️ Solo base de datos
+import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 
-// 2. Tus credenciales oficiales de la aplicación web
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDYtmlD8udnoHnhEfnbY2qi_OhIqw55Fms",
   authDomain: "incidentes-e7662.firebaseapp.com",
@@ -14,12 +14,12 @@ const firebaseConfig = {
   measurementId: "G-GXDGB52R0B"
 };
 
-// 3. Inicializamos esta instancia de Firebase
-const appFirebase2 = initializeApp(firebaseConfig, "databaseApp"); // Usamos un identificador único para evitar conflictos
+// Initialize Firebase
+const appFirebase = initializeApp(firebaseConfig);
+const analytics = getAnalytics(appFirebase);
 
-// 4. Inicializamos el servicio de Firestore pasándole la app
-const db = getFirestore(appFirebase2);
+// Initialize Firestore
+const db = getFirestore(appFirebase);
 
-// 5. Exportamos únicamente 'db' para usarla en el formulario de incidentes
 export { db };
-export default appFirebase2;
+export default appFirebase;

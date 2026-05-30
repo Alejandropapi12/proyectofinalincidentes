@@ -1,39 +1,45 @@
-import { useState, useEffect } from 'react'; // 🚨 Faltaba importar useState y useEffect
-import Header from './Components/Header/Header';
+import React, { useState, useEffect } from 'react'; 
 import Footer from './Components/Footer/Footer';
 import InicioSesion from './Components/InicioSesion/InicioSesion';
-import SesionUser from './Components/SesionUsers/SesionUsers'; // 🚨 Asegúrate de que esta ruta sea la de tu panel
-import appFirebase from './Components/FireBase/Config'; // Corregido el posible typo de 'appFirabes'
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import SesionUser from './Components/SesionUsers/SesionUsers'; 
+import appFirebase from './Components/FireBase/Config.js'; 
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import './App.css';
 
 const auth = getAuth(appFirebase);
 
 function App() {
   const [user, setUser] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
-  // useEffect evita que el escuchador de Firebase cree un bucle infinito de renderizados
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (userFirebase) => {
-      if (userFirebase) {
-        setUser(userFirebase);
-      } else {
-        setUser(null);
-      }
+      setUser(userFirebase || null);
+      setCargando(false);
     });
 
-    // Limpieza del escuchador cuando el componente se desmonta
     return () => unsubscribe();
   }, []);
 
+  if (cargando) {
+    return (
+      <div className="app-container">
+        <p style={{ textAlign: 'center', padding: '2rem' }}>Cargando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
-      <Header />
+      {/* 📋 SE ELIMINÓ EL HEADER GLOBAL PARA DEJAR TODO EL ESPACIO AL FORMULARIO */}
       
       <main style={{ flex: 1 }}>
-        {/* 🚨 Condicional limpio: si hay usuario muestra el panel, si no, el login */}
         {user ? (
-          <SesionUser correoUsuario={user.email} />
+          /* Al entrar aquí, SesionUser mostrará el botón de foto arriba de todo */
+          <SesionUser 
+            correoUsuario={user.email} 
+            alCerrarSesion={() => setUser(null)} 
+          />
         ) : (
           <InicioSesion />
         )}

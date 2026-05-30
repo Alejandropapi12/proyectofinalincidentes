@@ -1,18 +1,20 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // 👈 Importar Firestore
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBmiEIaRVQgPIXLScV0nsr2w_Qdl-fIL5I",
-  authDomain: "usuarios-70246.firebaseapp.com",
-  projectId: "usuarios-70246",
-  storageBucket: "usuarios-70246.firebasestorage.app",
-  messagingSenderId: "390372040078",
-  appId: "1:390372040078:web:4aeb469f42e2dcd19798df"
+  apiKey: "AIzaSyDYtmlD8udnoHnhEfnbY2qi_OhIqw55Fms",
+  authDomain: "incidentes-e7662.firebaseapp.com",
+  databaseURL: "https://incidentes-e7662-default-rtdb.firebaseio.com",
+  projectId: "incidentes-e7662",
+  storageBucket: "incidentes-e7662.firebasestorage.app",
+  messagingSenderId: "607270087598",
+  appId: "1:607270087598:web:063c6049c43af24cd8763f",
+  measurementId: "G-GXDGB52R0B"
 };
 
-// Initialize Firebase
 const appFirebase = initializeApp(firebaseConfig);
+export const auth = getAuth(appFirebase);
+export const db = getFirestore(appFirebase); // 👈 Exportar la base de datos
+
 export default appFirebase;

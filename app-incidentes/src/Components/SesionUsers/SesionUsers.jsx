@@ -2,137 +2,194 @@ import React, { useState } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { auth } from '../FireBase/Config'; 
 import { registrarIncidenteFirebase } from '../FireBase/incidentesService'; 
-import './SesionUsers.css';
+import { uploadImage } from '../../SupabaseCredenciales'; 
+import './SesionUsers.css'; 
 
 const SesionUser = ({ correoUsuario, alCerrarSesion }) => {
-  // Estados locales para capturar exclusivamente los datos de texto (RF-07)
+  // --- ESTADOS LÓGICOS ---
   const [tipoIncidente, setTipoIncidente] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [foto, setFoto] = useState(null); 
   const [sede, setSede] = useState('');
   const [bloque, setBloque] = useState('');
   const [detalleUbicacion, setDetalleUbicacion] = useState('');
   
-  // Control de interfaz y deshabilitación de envío duplicado
   const [enviando, setEnviando] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(''); 
 
-  const handleCerrarSesion = () => {
-    signOut(auth);
-    if (alCerrarSesion) alCerrarSesion();
+  // --- CERRAR SESIÓN ---
+  const handleCerrarSesion = async () => {
+    try {
+      await signOut(auth);
+      if (alCerrarSesion) {
+        alCerrarSesion(); 
+      }
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      setMensaje('❌ No se pudo cerrar la sesión correctamente.');
+    }
   };
 
+  // --- CAPTURA DE FOTO ---
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFoto(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  // --- ENVÍO DE FORMULARIO ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!foto) {
+      setMensaje('⚠️ Por favor, seleccione una fotografía obligatoria.');
+      return;
+    }
+
     setEnviando(true);
-    setMensaje('Enviando reporte...');
+    setMensaje('⏳ Subiendo evidencia a Supabase...');
 
     try {
-      // Agrupamos únicamente los campos string validados en tu consola Firestore
-      const datosFormulario = { tipoIncidente, descripcion, sede, bloque, detalleUbicacion };
-
-      // Invocamos el servicio puro aislado en config2
-      const idGenerado = await registrarIncidenteFirebase(datosFormulario, correoUsuario);
+      const user = auth.currentUser;
+      const uidParaCarpeta = user ? user.uid : 'anonimo';
       
-      console.log("Guardado mediante servicio externo con ID:", idGenerado);
-      setMensaje('✅ ¡Reporte almacenado con éxito en Firestore! Estado: "Reportado"');
+      // Subida al bucket 'fotoincidente'
+      const urlSupabaseString = await uploadImage(foto, 'fotoincidente', uidParaCarpeta);
+      
+      setMensaje('⏳ Guardando reporte en Firestore...');
 
-      // Limpieza integral de estados de texto del formulario
+      const datosFormulario = { 
+        tipoIncidente, 
+        descripcion, 
+        sede, 
+        bloque, 
+        detalleUbicacion,
+        foto_incidente: urlSupabaseString 
+      };
+
+      await registrarIncidenteFirebase(datosFormulario, correoUsuario);
+      setMensaje('✅ ¡Reporte e imagen almacenados con éxito!');
+
+      // Limpieza de estados
       setTipoIncidente('');
       setDescripcion('');
+      setFoto(null); 
       setSede('');
       setBloque('');
       setDetalleUbicacion('');
+      setPreviewUrl('');
       
-      // Temporizador limpio para desvanecer la alerta física en el DOM
+      if (document.getElementById('file-input')) {
+        document.getElementById('file-input').value = '';
+      }
+
       setTimeout(() => setMensaje(''), 4000);
 
     } catch (error) {
-      console.error("Error en el componente al invocar el servicio:", error);
-      setMensaje('❌ Hubo un inconveniente al conectar con la base de datos.');
+      console.error(error);
+      setMensaje('❌ Hubo un error al subir la imagen o guardar los datos.');
     } finally {
       setEnviando(false);
     }
   };
 
   return (
-    <div className="panel-estudiante">
-      <div className="panel-header">
-        <div>
-          <h2>🧑‍🎓 Portal de Reportes Estudiantiles</h2>
-          <p>Usuario: <strong>{correoUsuario || 'estudiante@gmail.com'}</strong></p>
-        </div>
-        <button className="btn-cerrar-sesion" onClick={handleCerrarSesion}>
-          🚪 Cerrar Sesión
-        </button>
-      </div>
-
-      <div className="form-card">
-        <h3>Registrar Nuevo Incidente</h3>
-        <p>Formulario conectado mediante capa de servicios aislada.</p>
+    <div className="reportes-container">
+      <div className="reportes-card">
         
-        {mensaje && <div className={`alerta-mensaje ${mensaje.includes('✅') ? 'exito' : 'error'}`}>{mensaje}</div>}
+        {/* Barra Superior */}
+        <div className="reportes-header">
+          <div>
+            <h2 className="reportes-title">Portal de Reportes</h2>
+            <p className="reportes-subtitle">
+              Conectado como: <strong>{correoUsuario || 'estudiante@gmail.com'}</strong>
+            </p>
+          </div>
+          <button className="btn-logout" onClick={handleCerrarSesion}>
+            Cerrar Sesión
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="reporte-form">
-          <div className="form-group">
-            <label>Tipo de incidente (Agrupación)</label>
-            <select value={tipoIncidente} onChange={(e) => setTipoIncidente(e.target.value)} required>
-              <option value="">-- Seleccione el tipo --</option>
-              <option value="baño">Baño</option>
-              <option value="electricidad">Electricidad</option>
-              <option value="infraestructura">Infraestructura</option>
-              <option value="seguridad">Seguridad</option>
-              <option value="otro">Otro</option>
+        {/* Alertas */}
+        {mensaje && (
+          <div className={`alerta-mensaje ${mensaje.includes('❌') || mensaje.includes('⚠️') ? 'error-alert' : 'success-alert'}`}>
+            {mensaje}
+          </div>
+        )}
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="form-reporte">
+          
+          <div className="input-group">
+            <label className="form-label">Categoría del Incidente</label>
+            <select value={tipoIncidente} onChange={(e) => setTipoIncidente(e.target.value)} required className="form-input">
+              <option value="">Seleccione una opción</option>
+              <option value="baño">🚻 Baño / Sanitarios</option>
+              <option value="electricidad">⚡ Electricidad / Iluminación</option>
+              <option value="infraestructura">🏢 Infraestructura / Estructura</option>
+              <option value="seguridad">🔒 Seguridad / Accesos</option>
+              <option value="otro">❓ Otro problema</option>
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Descripción detallada</label>
-            <textarea 
-              placeholder="Escriba los detalles del incidente..."
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              required
-              rows="4"
-            />
-          </div>
-
-          <div className="form-group-row" style={{ display: 'flex', gap: '15px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Sede</label>
-              <select value={sede} onChange={(e) => setSede(e.target.value)} required>
-                <option value="">-- Seleccione Sede --</option>
+          <div className="form-row">
+            <div className="input-group">
+              <label className="form-label">Sede Universitaria</label>
+              <select value={sede} onChange={(e) => setSede(e.target.value)} required className="form-input">
+                <option value="">Seleccione Sede</option>
                 <option value="Porvenir">Sede Porvenir</option>
                 <option value="Centro">Sede Centro</option>
-                <option value="Macagual">Macagual</option>
+                <option value="Macagual">Sede Macagual</option>
               </select>
             </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Bloque / Edificio</label>
-              <input 
-                type="text" 
-                placeholder="Ej: Bloque 1"
-                value={bloque}
-                onChange={(e) => setBloque(e.target.value)}
-                required
-              />
+            <div className="input-group">
+              <label className="form-label">Bloque / Edificio</label>
+              <input type="text" placeholder="Ej: Bloque 1" value={bloque} onChange={(e) => setBloque(e.target.value)} required className="form-input" />
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Detalle específico del lugar</label>
+          <div className="input-group">
+            <label className="form-label">Ubicación Específica</label>
+            <input type="text" placeholder="Ej: Salón 201 o Pasillo" value={detalleUbicacion} onChange={(e) => setDetalleUbicacion(e.target.value)} required className="form-input" />
+          </div>
+
+          <div className="input-group">
+            <label className="form-label">Descripción de los Hechos</label>
+            <textarea placeholder="Describe detalladamente el problema..." value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required rows="4" className="form-textarea" />
+          </div>
+
+          {/* ZONA DE CARGA FOTOGRÁFICA DE PRUEBA */}
+          <div className="input-group" style={{ border: '2px solid red', padding: '10px' }}>
+            <label className="form-label" style={{ color: 'black' }}>PRUEBA DE ENTRADA DE FOTO</label>
             <input 
-              type="text" 
-              placeholder="Ej: Salón 201"
-              value={detalleUbicacion}
-              onChange={(e) => setDetalleUbicacion(e.target.value)}
-              required
+              id="file-input"
+              type="file" 
+              accept="image/*" 
+              onChange={handleFileChange} 
             />
           </div>
 
-          <button type="submit" className="btn-enviar-reporte" disabled={enviando}>
-            {enviando ? '⏳ Guardando...' : '📥 Enviar Reporte'}
+          {foto && (
+            <div className="file-name-badge">
+              <span>📎</span> {foto.name}
+            </div>
+          )}
+
+          {previewUrl && (
+            <div className="preview-container">
+              <div className="preview-header">Vista previa cargada</div>
+              <img src={previewUrl} alt="Preview" className="image-preview" style={{ width: '100%' }} />
+            </div>
+          )}
+
+          <button type="submit" className="btn-submit" disabled={enviando}>
+            {enviando ? 'Guardando Registro...' : 'Enviar Reporte Completo'}
           </button>
+
         </form>
       </div>
     </div>
