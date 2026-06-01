@@ -1,52 +1,67 @@
-import { collection, addDoc, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
-import { db } from './config2'; // Base de datos exclusiva de Firestore
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import appFirebase from './Config.js';
 
-/**
- * Registra un incidente en Cloud Firestore mapeando de forma idéntica
- * los campos string que definiste en tu consola.
- */
-export const registrarIncidenteFirebase = async (datosFormulario, correoUsuario) => {
-  const { tipoIncidente, descripcion, sede, bloque, detalleUbicacion } = datosFormulario;
+const db = getFirestore(appFirebase);
 
-  // 1. Apuntamos a la colección 'incidentes'
-  const incidentesRef = collection(db, "incidentes");
-
-  // 2. Generamos un documento vacío para obtener su ID autogenerado ANTES de guardar
-  const nuevoDocRef = doc(incidentesRef); 
-
-  // 3. Estructura idéntica a tus campos guardados en la consola (Todos string)
-  const nuevoIncidente = {
-    id: nuevoDocRef.id, // 👈 Se guarda el ID real de forma inmediata sin hacer un update extra
-    usuarioId: correoUsuario || "estudiante@gmail.com",
-    tipo: tipoIncidente,
-    descripcion: descripcion.trim(),
-    ubicacionTexto: `${sede} - ${bloque} - ${detalleUbicacion}`.trim(),
-    fechaCreacion: new Date().toISOString(),
+// Registrar incidente con soporte de agrupación inicial
+export const registrarIncidenteFirebase = async (datos, correoUsuario) => {
+  try {
+    const docRef = await addDoc(collection(db, "incidentes"), {
+      ...datos,
+      correoUsuario,
+      status: "Reportado", // Estado inicial obligatorio
+      fechaReporte: new Date().toISOString(),
+      idGrupo: "" // Se actualizará inmediatamente después de crearse para auto-agruparse
+    });
     
-    // 💥 CORRECCIÓN CRUCIAL AQUÍ:
-    // Cambiado de 'FotoIncidente' a 'foto_incidente' para que coincida 
-    // exactamente con el campo string que me mostraste en tu consola de Firestore.
-    foto_incidente: datosFormulario.foto_incidente || "", 
-    
-    estado: "Reportado"
-  };
-
-  // 4. Enviamos el documento completo a Firestore de un solo golpe (Ahorras escrituras)
-  await setDoc(nuevoDocRef, nuevoIncidente);
-
-  return nuevoDocRef.id;
+    // Auto-asignamos el idGrupo igual al ID del documento inicial
+    await updateDoc(doc(db, "incidentes", docRef.id), { idGrupo: docRef.id });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error en servicio registrarIncidente:", error);
+    throw error;
+  }
 };
 
-export const leerIncidentesFirebase = async () => {
-  // 1. Apuntamos a la colección 'incidentes'
-  const incidentesRef = collection(db, "incidentes");
+// Leer todos los incidentes (Para el Admin)
+export const leerTodosLosIncidentes = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "incidentes"));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error al leer todos los incidentes:", error);
+    throw error;
+  }
+};
 
-  // 2. Leer los documentos de Firestore
-  const snapshot = await getDocs(incidentesRef);
-  const incidentes = [];
-  snapshot.forEach((doc) => {
-    console.log(doc.id, " => ", doc.data());
-    incidentes.push({ id: doc.id, ...doc.data() });
-  });
-  return incidentes;
+// Actualizar estado de todo un grupo de incidentes (RF-09 y RF-10)
+export const actualizarEstadoGrupo = async (idGrupo, nuevoEstado) => {
+  try {
+    const q = query(collection(db, "incidentes"), where("idGrupo", "==", idGrupo));
+    const querySnapshot = await getDocs(q);
+    const batch = writeBatch(db);
+
+    querySnapshot.forEach((documento) => {
+      const docRef = doc(db, "incidentes", documento.id);
+      batch.update(docRef, { status: nuevoEstado });
+    });
+
+    await batch.commit();
+  } catch (error) {
+    console.error("Error al actualizar el estado del grupo:", error);
+    throw error;
+  }
+};
+
+// Agrupar un incidente dentro de otro grupo existente (RF-10)
+export const agruparIncidente = async (idIncidenteHijo, idGrupoPadre, estadoPadre) => {
+  try {
+    await updateDoc(doc(db, "incidentes", idIncidenteHijo), {
+      idGrupo: idGrupoPadre,
+      status: estadoPadre // Hereda el estado del grupo principal
+    });
+  } catch (error) {
+    console.error("Error al agrupar incidente:", error);
+    throw error;
+  }
 };

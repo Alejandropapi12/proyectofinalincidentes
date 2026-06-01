@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { getAuth, signOut } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { signOut } from 'firebase/auth';
 import { auth } from '../FireBase/Config'; 
-import { registrarIncidenteFirebase } from '../FireBase/incidentesService'; 
+import { registrarIncidenteFirebase, leerTodosLosIncidentes } from '../FireBase/incidentesService'; 
 import { uploadImage } from '../../SupabaseCredenciales'; 
 import './SesionUsers.css'; 
 
 const SesionUser = ({ correoUsuario, alCerrarSesion }) => {
-  // --- ESTADOS LÓGICOS ---
+  const [pestana, setPestana] = useState('registrar'); // 'registrar' o 'historial'
   const [tipoIncidente, setTipoIncidente] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [foto, setFoto] = useState(null); 
@@ -18,179 +18,186 @@ const SesionUser = ({ correoUsuario, alCerrarSesion }) => {
   const [mensaje, setMensaje] = useState('');
   const [previewUrl, setPreviewUrl] = useState(''); 
 
-  // --- CERRAR SESIÓN ---
-  const handleCerrarSesion = async () => {
+  // Estados del Historial
+  const [misIncidentes, setMisIncidentes] = useState([]);
+  const [filtroEstado, setFiltroEstado] = useState('Todos');
+  const [incidenteSeleccionado, setIncidenteSeleccionado] = useState(null);
+
+  useEffect(() => {
+    if (pestana === 'historial') {
+      cargarMisIncidentes();
+    }
+  }, [pestana]);
+
+  const cargarMisIncidentes = async () => {
     try {
-      await signOut(auth);
-      if (alCerrarSesion) {
-        alCerrarSesion(); 
-      }
+      const todos = await leerTodosLosIncidentes();
+      const filtradosPorUsuario = todos.filter(inc => inc.correoUsuario === correoUsuario);
+      setMisIncidentes(filtradosPorUsuario);
     } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      setMensaje('❌ No se pudo cerrar la sesión correctamente.');
+      console.error("Error cargando historial:", error);
     }
   };
 
-  // --- CAPTURA DE FOTO ---
-  const handleFileChange = async (e) => {
+  const handleCerrarSesion = async () => {
+    try { await signOut(auth); if (alCerrarSesion) alCerrarSesion(); } 
+    catch (e) { setMensaje('❌ Error al cerrar sesión.'); }
+  };
+
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setFoto(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // --- ENVÍO DE FORMULARIO ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!foto) {
-      setMensaje('⚠️ Por favor, seleccione una fotografía obligatoria.');
-      return;
-    }
-
+    if (!foto) { setMensaje('⚠️ Fotografía obligatoria.'); return; }
     setEnviando(true);
-    setMensaje('⏳ Subiendo evidencia a Supabase...');
-
+    setMensaje('⏳ Subiendo evidencia...');
     try {
       const user = auth.currentUser;
-      const uidParaCarpeta = user ? user.uid : 'anonimo';
+      const urlSupabase = await uploadImage(foto, 'fotoincidente', user ? user.uid : 'anonimo');
+      setMensaje('⏳ Almacenando reporte...');
       
-      // Subida al bucket 'fotoincidente'
-      const urlSupabaseString = await uploadImage(foto, 'fotoincidente', uidParaCarpeta);
-      
-      setMensaje('⏳ Guardando reporte en Firestore...');
+      await registrarIncidenteFirebase({
+        tipoIncidente, descripcion, sede, bloque, detalleUbicacion, foto_incidente: urlSupabase
+      }, correoUsuario);
 
-      const datosFormulario = { 
-        tipoIncidente, 
-        descripcion, 
-        sede, 
-        bloque, 
-        detalleUbicacion,
-        foto_incidente: urlSupabaseString 
-      };
-
-      await registrarIncidenteFirebase(datosFormulario, correoUsuario);
-      setMensaje('✅ ¡Reporte e imagen almacenados con éxito!');
-
-      // Limpieza de estados
-      setTipoIncidente('');
-      setDescripcion('');
-      setFoto(null); 
-      setSede('');
-      setBloque('');
-      setDetalleUbicacion('');
-      setPreviewUrl('');
-      
-      if (document.getElementById('file-input')) {
-        document.getElementById('file-input').value = '';
-      }
-
+      setMensaje('✅ ¡Reporte guardado con éxito!');
+      setTipoIncidente(''); setDescripcion(''); setFoto(null); setSede(''); setBloque(''); setDetalleUbicacion(''); setPreviewUrl('');
       setTimeout(() => setMensaje(''), 4000);
-
     } catch (error) {
-      console.error(error);
-      setMensaje('❌ Hubo un error al subir la imagen o guardar los datos.');
-    } finally {
-      setEnviando(false);
-    }
+      setMensaje('❌ Hubo un error al guardar los datos.');
+    } finally { setEnviando(false); }
   };
+
+  const incidentesFiltrados = misIncidentes.filter(inc => filtroEstado === 'Todos' || inc.status === filtroEstado);
 
   return (
     <div className="reportes-container">
-      <div className="reportes-card">
+      <div className="reportes-card calculation-layout">
         
-        {/* Barra Superior */}
         <div className="reportes-header">
           <div>
-            <h2 className="reportes-title">Portal de Reportes</h2>
-            <p className="reportes-subtitle">
-              Conectado como: <strong>{correoUsuario || 'estudiante@gmail.com'}</strong>
-            </p>
+            <h2 className="reportes-title">Portal Estudiantil de Incidencias</h2>
+            <p className="reportes-subtitle">Usuario: <strong>{correoUsuario}</strong></p>
           </div>
-          <button className="btn-logout" onClick={handleCerrarSesion}>
-            Cerrar Sesión
-          </button>
+          <button className="btn-logout" onClick={handleCerrarSesion}>🚪 Salir</button>
         </div>
 
-        {/* Alertas */}
-        {mensaje && (
-          <div className={`alerta-mensaje ${mensaje.includes('❌') || mensaje.includes('⚠️') ? 'error-alert' : 'success-alert'}`}>
-            {mensaje}
-          </div>
-        )}
+        {/* Selector de Pestañas Navegables */}
+        <div className="tabs-nav">
+          <button className={`tab-button ${pestana === 'registrar' ? 'active' : ''}`} onClick={() => setPestana('registrar')}>📝 Registrar Reporte</button>
+          <button className={`tab-button ${pestana === 'historial' ? 'active' : ''}`} onClick={() => setPestana('historial')}>📋 Mis Reportes ({misIncidentes.length})</button>
+        </div>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="form-reporte">
-          
-          <div className="input-group">
-            <label className="form-label">Categoría del Incidente</label>
-            <select value={tipoIncidente} onChange={(e) => setTipoIncidente(e.target.value)} required className="form-input">
-              <option value="">Seleccione una opción</option>
-              <option value="baño">🚻 Baño / Sanitarios</option>
-              <option value="electricidad">⚡ Electricidad / Iluminación</option>
-              <option value="infraestructura">🏢 Infraestructura / Estructura</option>
-              <option value="seguridad">🔒 Seguridad / Accesos</option>
-              <option value="otro">❓ Otro problema</option>
-            </select>
-          </div>
+        {mensaje && <div className="alerta-mensaje success-alert">{mensaje}</div>}
 
-          <div className="form-row">
+        {pestana === 'registrar' ? (
+          <form onSubmit={handleSubmit} className="form-reporte">
             <div className="input-group">
-              <label className="form-label">Sede Universitaria</label>
-              <select value={sede} onChange={(e) => setSede(e.target.value)} required className="form-input">
-                <option value="">Seleccione Sede</option>
-                <option value="Porvenir">Sede Porvenir</option>
-                <option value="Centro">Sede Centro</option>
-                <option value="Macagual">Sede Macagual</option>
+              <label className="form-label">Categoría del Incidente</label>
+              <select value={tipoIncidente} onChange={(e) => setTipoIncidente(e.target.value)} required className="form-input">
+                <option value="">Seleccione una opción</option>
+                <option value="baño">🚻 Baño / Sanitarios</option>
+                <option value="electricidad">⚡ Electricidad / Iluminación</option>
+                <option value="infraestructura">🏢 Infraestructura / Estructura</option>
+                <option value="seguridad">🔒 Seguridad / Accesos</option>
+                <option value="otro">❓ Otro problema</option>
               </select>
             </div>
 
+            <div className="form-row">
+              <div className="input-group">
+                <label className="form-label">Sede</label>
+                <select value={sede} onChange={(e) => setSede(e.target.value)} required className="form-input">
+                  <option value="">Seleccione Sede</option>
+                  <option value="Porvenir">Sede Porvenir</option>
+                  <option value="Centro">Sede Centro</option>
+                  <option value="Macagual">Sede Macagual</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label className="form-label">Bloque</label>
+                <input type="text" placeholder="Ej: Bloque 1" value={bloque} onChange={(e) => setBloque(e.target.value)} required className="form-input" />
+              </div>
+            </div>
+
             <div className="input-group">
-              <label className="form-label">Bloque / Edificio</label>
-              <input type="text" placeholder="Ej: Bloque 1" value={bloque} onChange={(e) => setBloque(e.target.value)} required className="form-input" />
+              <label className="form-label">Ubicación Específica</label>
+              <input type="text" placeholder="Ej: Salón 201" value={detalleUbicacion} onChange={(e) => setDetalleUbicacion(e.target.value)} required className="form-input" />
             </div>
-          </div>
 
-          <div className="input-group">
-            <label className="form-label">Ubicación Específica</label>
-            <input type="text" placeholder="Ej: Salón 201 o Pasillo" value={detalleUbicacion} onChange={(e) => setDetalleUbicacion(e.target.value)} required className="form-input" />
-          </div>
-
-          <div className="input-group">
-            <label className="form-label">Descripción de los Hechos</label>
-            <textarea placeholder="Describe detalladamente el problema..." value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required rows="4" className="form-textarea" />
-          </div>
-
-          {/* ZONA DE CARGA FOTOGRÁFICA DE PRUEBA */}
-          <div className="input-group" style={{ border: '2px solid red', padding: '10px' }}>
-            <label className="form-label" style={{ color: 'black' }}>PRUEBA DE ENTRADA DE FOTO</label>
-            <input 
-              id="file-input"
-              type="file" 
-              accept="image/*" 
-              onChange={handleFileChange} 
-            />
-          </div>
-
-          {foto && (
-            <div className="file-name-badge">
-              <span>📎</span> {foto.name}
+            <div className="input-group">
+              <label className="form-label">Descripción</label>
+              <textarea placeholder="Detalles del suceso..." value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required rows="3" className="form-textarea" />
             </div>
-          )}
 
-          {previewUrl && (
-            <div className="preview-container">
-              <div className="preview-header">Vista previa cargada</div>
-              <img src={previewUrl} alt="Preview" className="image-preview" style={{ width: '100%' }} />
+            <div className="input-group">
+              <label className="form-label">Evidencia Fotográfica</label>
+              <div className={`file-dropzone ${foto ? 'has-file' : ''}`}>
+                <input id="file-input" type="file" accept="image/*" onChange={handleFileChange} required className="file-hidden" />
+                <label htmlFor="file-input" className="file-label">
+                  <span className="upload-icon">{foto ? '📸' : '📤'}</span>
+                  <span className="text-trigger">{foto ? 'Cambiar Imagen' : 'Subir Imagen'}</span>
+                </label>
+              </div>
+              {previewUrl && <img src={previewUrl} alt="Preview" className="image-preview" />}
             </div>
-          )}
 
-          <button type="submit" className="btn-submit" disabled={enviando}>
-            {enviando ? 'Guardando Registro...' : 'Enviar Reporte Completo'}
-          </button>
+            <button type="submit" className="btn-submit" disabled={enviando}>Enviar Reporte Completo</button>
+          </form>
+        ) : (
+          // Vista de Historial del Estudiante
+          <div className="historial-layout">
+            <div className="filter-bar">
+              <label>Filtrar Estado: </label>
+              <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="form-input text-sm">
+                <option value="Todos">Todos los estados</option>
+                <option value="Reportado">🔴 Reportado</option>
+                <option value="En proceso">🟡 En proceso</option>
+                <option value="Resuelto">🟢 Resuelto</option>
+              </select>
+            </div>
 
-        </form>
+            <div className="incidents-list">
+              {incidentesFiltrados.map(inc => (
+                <div key={inc.id} className="incident-item-card" onClick={() => setIncidenteSeleccionado(inc)}>
+                  <div className="incident-item-info">
+                    <h4>{inc.tipoIncidente.toUpperCase()} - {inc.sede}</h4>
+                    <p>{inc.detalleUbicacion} ({inc.bloque})</p>
+                  </div>
+                  <span className={`status-badge ${inc.status.toLowerCase().replace(" ", "-")}`}>
+                    {inc.status}
+                  </span>
+                </div>
+              ))}
+              {incidentesFiltrados.length === 0 && <p className="text-center-muted">No se encontraron registros.</p>}
+            </div>
+
+            {/* Vista modal/detallada integrada del incidente */}
+            {incidenteSeleccionado && (
+              <div className="modal-overlay-custom" onClick={() => setIncidenteSeleccionado(null)}>
+                <div className="modal-content-custom" onClick={e => e.stopPropagation()}>
+                  <h3>Detalle del Incidente</h3>
+                  <p><strong>Categoría:</strong> {incidenteSeleccionado.tipoIncidente}</p>
+                  <p><strong>Ubicación:</strong> {incidenteSeleccionado.sede} - {incidenteSeleccionado.bloque} ({incidenteSeleccionado.detalleUbicacion})</p>
+                  <p><strong>Descripción:</strong> {incidenteSeleccionado.descripcion}</p>
+                  <p><strong>Estado Actual:</strong> <span className={`status-badge ${incidenteSeleccionado.status.toLowerCase().replace(" ", "-")}`}>{incidenteSeleccionado.status}</span></p>
+                  {incidenteSeleccionado.foto_incidente && (
+                    <div className="modal-img-container">
+                      <p><strong>Evidencia Fotográfica:</strong></p>
+                      <img src={incidenteSeleccionado.foto_incidente} alt="Evidencia" className="image-preview-large" />
+                    </div>
+                  )}
+                  <button className="btn-submit btn-close-modal" onClick={() => setIncidenteSeleccionado(null)}>Cerrar Detalle</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

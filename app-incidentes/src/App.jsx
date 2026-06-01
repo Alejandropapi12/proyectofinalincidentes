@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'; 
 import Footer from './Components/Footer/Footer';
 import InicioSesion from './Components/InicioSesion/InicioSesion';
-import SesionUser from './Components/SesionUsers/SesionUsers'; 
-import appFirebase from './Components/FireBase/Config.js'; 
+import SesionUser from './Components/SesionUsers/SesionUsers.jsx'; 
+import SetionAdm from './Components/SetionAdm/SetionAdm.jsx'; 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import appFirebase from './Components/FireBase/Config.js'; // 1 sola vez, limpio y ordenado
 import './App.css';
 
 const auth = getAuth(appFirebase);
@@ -11,10 +12,22 @@ const auth = getAuth(appFirebase);
 function App() {
   const [user, setUser] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (userFirebase) => {
-      setUser(userFirebase || null);
+      if (userFirebase) {
+        setUser(userFirebase);
+        // Validación de credencial de Administrador por defecto
+        if (userFirebase.email === 'alejandrovargasjoven7@gmail.com') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
       setCargando(false);
     });
 
@@ -31,20 +44,17 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* 📋 SE ELIMINÓ EL HEADER GLOBAL PARA DEJAR TODO EL ESPACIO AL FORMULARIO */}
-      
       <main style={{ flex: 1 }}>
         {user ? (
-          /* Al entrar aquí, SesionUser mostrará el botón de foto arriba de todo */
-          <SesionUser 
-            correoUsuario={user.email} 
-            alCerrarSesion={() => setUser(null)} 
-          />
+          isAdmin ? (
+            <SetionAdm alCerrarSesion={() => auth.signOut()} />
+          ) : (
+            <SesionUser correoUsuario={user.email} alCerrarSesion={() => setUser(null)} />
+          )
         ) : (
           <InicioSesion />
         )}
       </main>
-
       <Footer />
     </div>
   );

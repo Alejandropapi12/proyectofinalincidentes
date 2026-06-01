@@ -1,0 +1,293 @@
+/* ==========================================================================
+   🛠️ DASHBOARD DE ADMINISTRACIÓN - SESIONADM.CSS
+   ========================================================================== */
+
+.admin-container {
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.admin-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  max-width: 800px; /* Un poco más ancho para las tablas y estadísticas */
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 20px;
+}
+
+/* Sección de Ajustes de Credencial */
+.credencial-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+
+.credencial-box h4 {
+  margin: 0 0 12px 0;
+  color: #334155;
+  font-size: 14px;
+}
+
+.credencial-form {
+  display: flex;
+  gap: 12px;
+}
+
+.credencial-msg {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Sección de Métricas e Indicadores (RF-11) */
+.estadisticas-section {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+
+.est-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.est-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.metrics-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.metric-box {
+  flex: 1 1 150px;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.metric-box h5 {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.metric-box h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+/* Colores de las cajas de métricas */
+.metric-box.total { background-color: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; }
+.metric-box.reportado { background-color: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+.metric-box.proceso { background-color: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+.metric-box.resuelto { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+/* Simulación de Gráfico de Barras */
+.tipos-grafico-bar h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.chart-label {
+  width: 140px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  text-align: right;
+}
+
+.chart-bar-bg {
+  flex: 1;
+  background-color: #f1f5f9;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.chart-bar-fill {
+  background-color: #3b82f6; /* Azul corporativo para las barras */
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+/* Botón de Impresión (RF-12) */
+.btn-print {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-print:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Listado de gestión de incidentes */
+.admin-management h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.admin-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.admin-incident-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-incident-row:hover {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* Bloques de acciones en el Modal (RF-09 y RF-10) */
+.control-estados-block, .agrupacion-block {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.control-estados-block label, .agrupacion-block label {
+  display: block;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.btn-group-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-st {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: white;
+  transition: background 0.2s;
+}
+
+.btn-st.rep:hover { background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+.btn-st.proc:hover { background-color: #fffbeb; color: #b45309; border-color: #fde68a; }
+.btn-st.res:hover { background-color: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+
+.agrupar-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-close-modal {
+  background-color: #64748b !important;
+  margin-top: 20px;
+}
+
+/* ==========================================================================
+   🖨️ CONTROL DE CONFIGURACIÓN DE IMPRESIÓN (RF-12)
+   ========================================================================== */
+@media print {
+  /* Ocultar absolutamente todo el entorno web */
+  body, html, #root, .admin-container {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ocultar elementos marcados como no imprimibles */
+  .no-print, .btn-print, .credencial-box, .admin-management, .modal-overlay-custom, .btn-logout {
+    display: none !important;
+  }
+
+  /* Forzar a que la sección de estadísticas ocupe todo el ancho real del papel */
+  .admin-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .estadisticas-section {
+    border: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Asegurar que se vean los colores de fondo de los gráficos en las impresoras */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
