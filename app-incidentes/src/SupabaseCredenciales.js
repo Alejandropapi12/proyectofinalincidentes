@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// ⚠️ CORRECCIÓN: Quitamos '/rest/v1/' para que el Storage funcione correctamente
 const supabaseUrl = 'https://xdarkxrceognppgnrgtl.supabase.co';
 const supabaseKey = 'sb_publishable_26fMRY29pymyaCswFbtGIA_Lq2tyJ-R';
 
@@ -23,7 +22,6 @@ export const uploadImage = async (file, bucket, folder) => {
 
     if (error) throw error;
 
-    // Obtener la URL pública (String)
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath);
     return urlData.publicUrl;
 

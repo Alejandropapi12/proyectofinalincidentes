@@ -88,7 +88,6 @@
   color: var(--footer-accent);
 }
 
-/* Marca de la Universidad */
 .footer-logo {
   display: flex;
   align-items: center;
@@ -106,7 +105,6 @@
   font-size: 1.6rem;
 }
 
-/* Divisor */
 .footer-divider {
   border: 0;
   height: 1px;
@@ -114,7 +112,6 @@
   margin: 2.5rem 0 1.5rem 0;
 }
 
-/* Sección Inferior */
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -129,7 +126,6 @@
   margin: 0;
 }
 
-/* Punto de estado */
 .system-status {
   display: flex;
   align-items: center;
@@ -153,10 +149,9 @@
   color: var(--text-footer-muted);
 }
 
-/* Responsivo para Tablets y Teléfonos móviles */
 @media (max-width: 850px) {
   .footer-top {
-    grid-template-columns: 1fr; /* Pasa a formato de lista vertical */
+    grid-template-columns: 1fr; 
     gap: 2rem;
   }
   

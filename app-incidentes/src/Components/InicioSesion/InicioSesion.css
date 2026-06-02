@@ -14,12 +14,12 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   width: 100%;
-  max-width: 650px; /* Un poco más ancho para albergar cómodamente el formulario */
+  max-width: 650px; 
   padding: 2rem;
   box-sizing: border-box;
 }
 
-/* Encabezado del usuario */
+
 .session-welcome {
   display: flex;
   justify-content: space-between;
@@ -63,7 +63,6 @@
   margin: 1.5rem 0;
 }
 
-/* Estilos del Formulario */
 .report-form h3 {
   margin: 0 0 1.5rem 0;
   color: #1e40af;
@@ -92,13 +91,11 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Estilo para el input tipo archivo */
 .report-form input[type="file"] {
   font-size: 0.9rem;
   color: #6b7280;
 }
 
-/* Vista previa de imagen */
 .image-preview-container {
   margin-top: 1rem;
   background-color: #f8fafc;
@@ -121,7 +118,6 @@
   object-fit: cover;
 }
 
-/* Botón de envío */
 .btn-submit-report {
   width: 100%;
   background-color: #1e40af;
@@ -139,7 +135,6 @@
 .btn-submit-report:hover {
   background-color: #1d4ed8;
 }
-/* --- Estilo de la alerta de registro obligatorio --- */
 .login-error-alert {
   background-color: #fff9db;
   border: 1px solid #ffe066;
@@ -157,7 +152,6 @@
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* --- DISEÑO RESPONSIVO --- */
 @media (max-width: 480px) {
   .session-card {
     padding: 1.2rem;

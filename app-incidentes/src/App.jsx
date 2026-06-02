@@ -4,7 +4,7 @@ import InicioSesion from './Components/InicioSesion/InicioSesion';
 import SesionUser from './Components/SesionUsers/SesionUsers.jsx'; 
 import SetionAdm from './Components/SetionAdm/SetionAdm.jsx'; 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
-import appFirebase from './Components/FireBase/Config.js'; // 1 sola vez, limpio y ordenado
+import appFirebase from './Components/FireBase/Config.js'; 
 import './App.css';
 
 const auth = getAuth(appFirebase);

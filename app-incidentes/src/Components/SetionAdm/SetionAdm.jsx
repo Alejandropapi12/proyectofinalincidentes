@@ -25,7 +25,7 @@ function SetionAdm({ alCerrarSesion }) {
     }
   };
 
-  // 🛠️ RF-09 y RF-10 CORREGIDO: Detecta si maneja un grupo o un incidente único independiente
+  //  Detecta si maneja un grupo o un incidente único independiente
   const handleCambiarEstado = async (incidente, nuevoEstado) => {
     // Si el incidente tiene un idGrupo asignado que no sea vacío, actualiza el grupo.
     // Si está vacío o es igual a su propio ID, se trata como un problema individual.
@@ -210,7 +210,7 @@ function SetionAdm({ alCerrarSesion }) {
               <p><strong>Tipo de Caso:</strong> {incidenteSeleccionado.idGrupo && incidenteSeleccionado.idGrupo !== incidenteSeleccionado.id ? '🔗 Incidente Vinculado a un Grupo' : '🆔 Problema Independiente / Único'}</p>
               <p><strong>Descripción:</strong> {incidenteSeleccionado.descripcion}</p>
               
-              {/* RF-09: Control de Cambios de Estado Inteligente */}
+              {/* Control de Cambios de Estado Inteligente */}
               <div className="control-estados-block">
                 <label><strong>Establecer Estado:</strong></label>
                 <div className="btn-group-status">
@@ -220,7 +220,7 @@ function SetionAdm({ alCerrarSesion }) {
                 </div>
               </div>
 
-              {/* RF-10: Formulario de Agrupación de Incidentes Similares */}
+              {/* Formulario de Agrupación de Incidentes Similares */}
               <div className="agrupacion-block">
                 <label><strong>🔗 Agrupar este incidente en otro Caso Principal:</strong></label>
                 <form onSubmit={(e) => handleAgrupar(e, incidenteSeleccionado.id)} className="agrupar-form">

@@ -1,6 +1,4 @@
-/* ==========================================================================
-   ⚙️ CONFIGURACIÓN GLOBAL Y RESCATE DEL SCROLL
-   ========================================================================== */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -11,7 +9,6 @@ html, body {
   scroll-behavior: smooth;
 }
 
-/* El contenedor principal de tu App.jsx */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -20,7 +17,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Tu etiqueta <main> donde se renderiza SesionUser */
 main {
   flex: 1 0 auto;
   width: 100%;
@@ -45,9 +41,7 @@ main {
   }
 }
 
-/* ==========================================================================
-   MANTENIMIENTO DE VARIABLES EN CASO DE QUE FALTEN
-   ========================================================================== */
+
 :root {
   --border: #e2e8f0;
   --accent: #2563eb;

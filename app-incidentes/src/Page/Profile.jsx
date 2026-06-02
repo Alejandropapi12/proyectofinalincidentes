@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { uploadImage } from '../SupabaseCredenciales'; // Ajusta a '../Components/SupabaseCredenciales' si lo moviste de carpeta
+import { uploadImage } from '../SupabaseCredenciales'; 
 import { doc, getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import appFirebase from '../Components/FireBase/Config.js'; // 👈 RUTA CORREGIDA CON EXTENSIÓN
+import appFirebase from '../Components/FireBase/Config.js'; 
 
 const db = getFirestore(appFirebase);
 const auth = getAuth(appFirebase);
@@ -32,7 +32,6 @@ export default function Profile() {
         return;
       }
 
-      // Se conecta exactamente al nombre que tienes en tu panel de Supabase
       const url = await uploadImage(file, 'fotoincidente', user.uid);
       
       setImageUrl(url);
